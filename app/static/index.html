@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Google Photo Downloader</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <!-- Login Screen -->
+  <div id="login-screen" class="screen hidden">
+    <div class="login-card">
+      <div class="login-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
+          <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+      </div>
+      <h1>Google Photo Downloader</h1>
+      <p class="subtitle">Self-hosted photo sync</p>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" required autocomplete="username" />
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required autocomplete="current-password" />
+        </div>
+        <div class="form-group">
+          <label for="timeout">Session timeout</label>
+          <select id="timeout" name="timeout">
+            <option value="15">15 minutes</option>
+            <option value="60" selected>1 hour</option>
+            <option value="1440">1 day</option>
+            <option value="10080">1 week</option>
+          </select>
+        </div>
+        <button class="btn btn-primary btn-full" type="submit">Sign In</button>
+        <p id="login-error" class="error-text hidden"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div id="app" class="hidden">
+    <!-- Sidebar -->
+    <nav id="sidebar">
+      <div class="sidebar-brand">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28" height="28">
+          <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        <span>GPD</span>
+      </div>
+      <ul class="nav-list">
+        <li><a href="#dashboard" class="nav-item active" data-tab="dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          Dashboard
+        </a></li>
+        <li><a href="#browser" class="nav-item" data-tab="browser">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          Photo Browser
+        </a></li>
+        <li><a href="#sync" class="nav-item" data-tab="sync">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          Sync Log
+        </a></li>
+        <li><a href="#settings" class="nav-item" data-tab="settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Settings
+        </a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <button id="logout-btn" class="btn btn-ghost btn-sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          Logout
+        </button>
+      </div>
+    </nav>
+
+    <!-- Content -->
+    <main id="content">
+      <!-- Dashboard Tab -->
+      <section id="tab-dashboard" class="tab-content">
+        <div class="page-header">
+          <h2>Dashboard</h2>
+          <div class="header-actions">
+            <button id="sync-start-btn" class="btn btn-primary">Start Sync</button>
+            <button id="sync-pause-btn" class="btn btn-secondary hidden">Pause</button>
+            <button id="sync-cancel-btn" class="btn btn-danger hidden">Cancel</button>
+          </div>
+        </div>
+
+        <!-- Google Connection Banner -->
+        <div id="google-banner" class="banner banner-warning hidden">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          <span>Google Photos not connected. <a id="connect-google-link" href="#">Connect now →</a></span>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Discovered</div>
+            <div class="stat-value" id="stat-total">—</div>
+          </div>
+          <div class="stat-card stat-success">
+            <div class="stat-label">Downloaded</div>
+            <div class="stat-value" id="stat-completed">—</div>
+          </div>
+          <div class="stat-card stat-warning">
+            <div class="stat-label">Pending</div>
+            <div class="stat-value" id="stat-pending">—</div>
+          </div>
+          <div class="stat-card stat-danger">
+            <div class="stat-label">Failed</div>
+            <div class="stat-value" id="stat-failed">—</div>
+          </div>
+        </div>
+
+        <!-- Sync Progress -->
+        <div class="card" id="sync-progress-card">
+          <div class="card-header">
+            <h3>Current Sync</h3>
+            <span id="sync-state-badge" class="badge badge-idle">Idle</span>
+          </div>
+          <div class="card-body">
+            <div class="progress-bar-wrap">
+              <div class="progress-bar" id="sync-progress-bar" style="width:0%"></div>
+            </div>
+            <div class="progress-meta">
+              <span id="sync-current-file" class="text-muted">—</span>
+              <span id="sync-speed">—</span>
+            </div>
+            <div class="progress-numbers">
+              <span>Downloaded: <strong id="pg-downloaded">0</strong></span>
+              <span>Skipped: <strong id="pg-skipped">0</strong></span>
+              <span>Failed: <strong id="pg-failed">0</strong></span>
+              <span>Transferred: <strong id="pg-bytes">0 B</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Disk Usage -->
+        <div class="card">
+          <div class="card-header"><h3>Storage</h3></div>
+          <div class="card-body">
+            <div class="disk-info">
+              <span id="disk-used">Computing…</span>
+              <span class="text-muted" id="disk-path">—</span>
+            </div>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar progress-bar-disk" id="disk-bar" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Browser Tab -->
+      <section id="tab-browser" class="tab-content hidden">
+        <div class="page-header">
+          <h2>Photo Browser</h2>
+          <div class="browser-tabs">
+            <button class="browser-tab active" data-side="local">Local</button>
+            <button class="browser-tab" data-side="source">Google Photos</button>
+            <button class="browser-tab" data-side="compare">Compare</button>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-bar" id="local-filters">
+          <select id="filter-year"><option value="">All Years</option></select>
+          <select id="filter-month"><option value="">All Months</option></select>
+          <select id="filter-album"><option value="">All Albums</option></select>
+        </div>
+
+        <!-- Photo Grid -->
+        <div id="photo-grid" class="photo-grid"></div>
+        <div class="pagination" id="pagination"></div>
+
+        <!-- Lightbox -->
+        <div id="lightbox" class="lightbox hidden">
+          <button class="lightbox-close" id="lightbox-close">✕</button>
+          <div class="lightbox-content">
+            <img id="lightbox-img" src="" alt="" />
+            <div class="lightbox-meta" id="lightbox-meta"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sync Log Tab -->
+      <section id="tab-sync" class="tab-content hidden">
+        <div class="page-header">
+          <h2>Sync Log</h2>
+          <button id="retry-failed-btn" class="btn btn-secondary">Retry Failed</button>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Sync History</h3></div>
+          <div class="card-body no-pad">
+            <table class="data-table" id="sync-history-table">
+              <thead>
+                <tr>
+                  <th>Started</th><th>Duration</th><th>Status</th>
+                  <th>Downloaded</th><th>Skipped</th><th>Failed</th><th>Transferred</th>
+                </tr>
+              </thead>
+              <tbody id="sync-history-body"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card" id="errors-card">
+          <div class="card-header"><h3>Failed Items</h3></div>
+          <div class="card-body no-pad">
+            <table class="data-table" id="errors-table">
+              <thead><tr><th>Filename</th><th>Attempts</th><th>Error</th><th>Last Updated</th></tr></thead>
+              <tbody id="errors-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Settings Tab -->
+      <section id="tab-settings" class="tab-content hidden">
+        <div class="page-header"><h2>Settings</h2></div>
+
+        <!-- Google Connection -->
+        <div class="card">
+          <div class="card-header"><h3>Google Photos Connection</h3></div>
+          <div class="card-body">
+            <div id="google-status-detail" class="connection-status"></div>
+            <div class="button-row">
+              <button id="connect-google-btn" class="btn btn-primary">Connect Google Account</button>
+              <button id="disconnect-google-btn" class="btn btn-danger hidden">Disconnect</button>
+            </div>
+            <p class="help-text">You will be redirected to Google to grant read-only access to your Photos library.</p>
+          </div>
+        </div>
+
+        <!-- Sync Settings -->
+        <div class="card">
+          <div class="card-header"><h3>Sync Configuration</h3></div>
+          <div class="card-body">
+            <form id="sync-settings-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Speed Limit (MB/s)</label>
+                  <input type="number" id="speed-limit" name="speed_limit_mbps" min="0" step="0.5" placeholder="0 = unlimited" />
+                  <span class="help-text">0 = unlimited</span>
+                </div>
+                <div class="form-group">
+                  <label>Sync Interval (minutes)</label>
+                  <input type="number" id="sync-interval" name="sync_interval_minutes" min="5" />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Session Timeout</label>
+                  <select id="session-timeout" name="session_timeout_minutes">
+                    <option value="15">15 minutes</option>
+                    <option value="60">1 hour</option>
+                    <option value="1440">1 day</option>
+                    <option value="10080">1 week</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Destination Path</label>
+                  <input type="text" id="dest-path" disabled />
+                  <span class="help-text">Set via DESTINATION_PATH in .env</span>
+                </div>
+              </div>
+              <button class="btn btn-primary" type="submit">Save Settings</button>
+              <span id="settings-saved" class="success-text hidden">Saved!</span>
+            </form>
+          </div>
+        </div>
+
+        <!-- About -->
+        <div class="card">
+          <div class="card-header"><h3>About</h3></div>
+          <div class="card-body">
+            <p><strong>Google Photo Downloader</strong> v1.0.0</p>
+            <p class="text-muted">Self-hosted, Docker-deployable sync of Google Photos to a local directory.</p>
+            <a href="https://github.com" target="_blank" class="btn btn-ghost btn-sm">View on GitHub</a>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

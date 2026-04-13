@@ -1,0 +1,39 @@
+# Environment & Credentials (NEVER commit these)
+env/.env
+env/credentials/*.json
+env/credentials/token*
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/lib/
+env/bin/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# Editors
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Data (don't commit actual photo data or DB)
+data/
+*.db
+*.sqlite
+
+# OS
+.DS_Store
+Thumbs.db

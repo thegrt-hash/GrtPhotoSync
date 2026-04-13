@@ -1,0 +1,15 @@
+[Unit]
+Description=Google Photo Downloader
+After=docker.service network-online.target
+Requires=docker.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/google-photo-downloader
+ExecStart=/usr/bin/docker compose up
+ExecStop=/usr/bin/docker compose down
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

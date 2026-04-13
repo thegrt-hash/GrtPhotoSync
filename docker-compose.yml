@@ -1,0 +1,30 @@
+services:
+  google-photo-downloader:
+    build: .
+    container_name: google-photo-downloader
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      # Your photo destination directory
+      - ${DESTINATION_PATH:-/mnt/photos}:/data/photos
+      # Persistent database & logs
+      - gpd_data:/data
+      # Google OAuth token storage (separate from photos for easy backup)
+      - ./env/credentials:/app/credentials:ro
+    env_file:
+      - ./env/.env
+    environment:
+      - DESTINATION_PATH=/data/photos
+      - DATABASE_PATH=/data/gpd.db
+      - LOG_PATH=/data/logs
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8080/api/status/health').raise_for_status()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  gpd_data:
+    driver: local
