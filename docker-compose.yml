@@ -6,18 +6,19 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      # Your photo destination directory
-      - ${DESTINATION_PATH:-/mnt/photos}:/data/photos
-      # Persistent database & logs
+      # NAS SMB share mounted on the host/LXC at /mnt/photos
+      - /mnt/photos:/mnt/photos
+      # Persistent database, logs, and thumbnail cache
       - gpd_data:/data
-      # Google OAuth token storage (separate from photos for easy backup)
-      - ./env/credentials:/app/credentials:ro
+      # Google OAuth token (auto-populated after first login)
+      - ./env/credentials:/app/credentials
     env_file:
       - ./env/.env
     environment:
-      - DESTINATION_PATH=/data/photos
+      - DESTINATION_PATH=/mnt/photos
       - DATABASE_PATH=/data/gpd.db
       - LOG_PATH=/data/logs
+      - THUMBNAIL_CACHE_PATH=/data/thumbs
     healthcheck:
       test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8080/api/status/health').raise_for_status()"]
       interval: 30s
